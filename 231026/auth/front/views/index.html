@@ -6,6 +6,14 @@
     <title>Front</title>
   </head>
   <body>
+    {% if user %}
+    <p>{{ user.nickname }}님, 반갑습니다!</p>
+    <p><a href="/logout">로그아웃</a></p>
+
+    <img src="{{ user.profile_image }}" alt="Profile Image" />
+
+    {% else %}
     <a href="/auth/kakao/login">login</a>
+    {% endif %}
   </body>
 </html>

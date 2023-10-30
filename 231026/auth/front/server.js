@@ -2,14 +2,17 @@ const express = require("express");
 const app = express();
 const axios = require("axios");
 const nunjucks = require("nunjucks");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 // const middleware = require("./src/auth/auth.middleware.js");
 
 const REST_API_KEY = "45654acfea156e8a4db2925f2067c009";
-const KAKAO_REDIRECT_URI = "http://localhost:3000/auth/kakao/callback";
-app.set("view engine", "html");
+const KAKAO_REDIRECT_URI = "http://localhost:8080/auth/kakao/callback";
 
+app.set("view engine", "html");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 // app.use(middleware.auth);
 nunjucks.configure("views", {
   express: app,
@@ -17,10 +20,33 @@ nunjucks.configure("views", {
 
 app.get("/", (req, res, next) => {
   try {
-    res.render("index.html");
+    console.log("req.cookies : ", req.cookies);
+    const token = req.cookies.token; // 쿠키에서 토큰을 얻어옴
+    let user = null;
+
+    if (token) {
+      jwt.verify(token, "web7722", (err, decoded) => {
+        if (err) {
+          console.log("Invalid Token", err);
+        } else {
+          user = decoded;
+        }
+      });
+    }
+
+    res.render("index.html", { user }); // 디코딩한 결과를 템플릿에 전달
   } catch (e) {
     next(e);
   }
+});
+
+app.get("/logout", (req, res) => {
+  res.cookie("token", "", {
+    maxAge: 0, // 쿠키 유효시간을 0으로 설정
+    domain: "localhost",
+    path: "/",
+  });
+  res.redirect("/");
 });
 
 app.get("/auth/kakao/login", (req, res, next) => {
@@ -90,7 +116,7 @@ app.get("/auth/kakao/callback", async (req, res, next) => {
     };
     // console.log("toBackendData : ",toBackendData);
     const jwtToken = await axios.post(
-      "http://localhost:4000/users/jwt",
+      "http://localhost:8081/users/jwt",
       { toBackendData },
       {
         headers: {
@@ -99,7 +125,7 @@ app.get("/auth/kakao/callback", async (req, res, next) => {
       }
     );
 
-    console.log("jwtToken : ", jwtToken);
+    console.log("jwtToken.data : ", jwtToken.data);
 
     res.cookie("token", jwtToken.data, {
       maxAge: 60 * 60 * 1000,
@@ -118,6 +144,6 @@ app.use((error, req, res, next) => {
   res.status(500).send(error.message);
 });
 
-app.listen(3000, () => {
-  console.log("Front Server started at PORT: 3000");
+app.listen(8080, () => {
+  console.log("Front Server started at PORT: 8080");
 });

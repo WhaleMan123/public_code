@@ -23,8 +23,8 @@ const initializeServer = async () => {
     await sequelize.sync({ force: true });
     console.log("Sync the database Succeeded");
 
-    app.listen(4000, () => {
-      console.log("Backend Server started at PORT: 4000");
+    app.listen(8081, () => {
+      console.log("Backend Server started at PORT: 8081");
     });
   } catch (error) {
     console.error("Unable to sync the database or start server", error);
