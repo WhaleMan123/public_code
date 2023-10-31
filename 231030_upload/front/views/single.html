@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Single</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  </head>
+  <body>
+    <form method="POST" action="" enctype="multipart/form-data">
+      <input type="text" name="id" />
+      <input type="password" name="password" />
+      <input type="text" name="name" />
+      <input type="file" name="profileImg" />
+      <button type="submit">전송</button>
+    </form>
+    <script type="text/javascript">
+      const frm = document.querySelector("form");
+      frm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        console.log("e.target.title : ", e.target.title);
+        console.log("e.target.profileImg : ", e.target.profileImg);
+        console.log("이벤트 잘 막혔나?~~");
+
+        // axios 사용하여 비동기로 구성!
+        // javascript는 기본적으로 formData를 만들어주는 내장객체가 존재한다.
+        const formData = new FormData(e.target);
+        const { data, status } = await axios.post(
+          "http://localhost:8000/upload",
+          formData
+        );
+        console.log("data : ", data);
+        console.log("status : ", status);
+        if (status === 200) {
+          document.cookie =
+            "token=" + data + "; path=/; domain=localhost; max-age=" + 60 * 60;
+          window.location.href = "/";
+        }
+      });
+    </script>
+  </body>
+</html>
